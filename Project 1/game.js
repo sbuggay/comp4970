@@ -19,7 +19,8 @@ p = 0;
 actions = [],
 running = false,
 direction = 0,
-lives = 3;
+lives = 3,
+wrenches = 0;
 
 var map = new Array(10);
 for (var i = 0; i < 10; i++) {
@@ -52,6 +53,10 @@ var wrench = new Image;
 wrench.src = "wrench.png";
 var battery = new Image;
 battery.src = "battery.png";
+var portal_closed = new Image;
+portal_closed.src = "portal-closed.png";
+var portal_open = new Image;
+portal_open.src = "portal-open.png";
 
 
 audio.addEventListener("ended", loop, false);
@@ -148,6 +153,7 @@ function reset() {
     p = 0;
     actions = [];
     running = false;
+    wrenches = 0;
 
     objects.length = 0;
 
@@ -300,6 +306,7 @@ function process(var1) {
             case 1:
             if(tx == objects[i].x && ty == objects[i].y) {
                 objects.splice(i, 1);
+                wrenches++;
             }
             break;
         }
@@ -346,7 +353,13 @@ var loop = setInterval(function() {
                 break;
 
                 case 4:
-                c.drawImage(exit, i * 60, j * 60);
+                if(wrenches >= 3) {
+                    c.drawImage(portal_open, i * 60, j * 60);
+                }
+                else {
+                    c.drawImage(portal_closed, i * 60, j * 60);
+                }
+                
                 break;
             }
             
