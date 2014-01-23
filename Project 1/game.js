@@ -4,39 +4,113 @@ c.font = "24px sans-serif";
 
 
 
-var x = 0,
-y = 0,
-tx = 0,
-ty = 0;
+var x = 0, //current x pixel value
+y = 0, //current y pixel value
+tx = 0, //target x tile value
+ty = 0, //target y tile value
+px = 0, //previous x tile value
+py = 0, //previous y tile value
 moving = false,
 width = 800,
 height = 600,
 keys = [],
 p = 0;
-actions = [];
+actions = [],
+running = false,
+direction = 0;;
 
 var map = new Array(10);
-  for (var i = 0; i < 10; i++) {
+for (var i = 0; i < 10; i++) {
     map[i] = new Array(10);
-  }
-
-for(var i = 0; i < 10; i++) {
-    for(var j = 0; j < 10; j++) {
-        map[i][j] = Math.floor((Math.random() * 3));
-    }
 }
 
-var robot = new Image;
-robot.src = "robot.png";
+
+
+var objects = [];
+
+
+
+
+var roboot_front = new Image;
+roboot_front.src = "roboot_front.png";
+var roboot_back = new Image;
+roboot_back.src = "roboot_back.png";
+var roboot_left = new Image;
+roboot_left.src = "roboot_left.png";
+var roboot_right = new Image;
+roboot_right.src = "roboot_right.png";
 var normal = new Image;
 normal.src = "tile.png"
+var wall = new Image;
+wall.src = "wall.png";
 var fall = new Image;
 fall.src = "fall.png"
+var exit = new Image;
+exit.src = "circuit.png";
+var block = new Image;
+block.src = "block.png";
+var wrench = new Image;
+wrench.src = "wrench.png";
 
+function load_map(level) {
+    switch (level) {
+        case 0:
+        map = [
+        [2,2,2,2,2,2,2,2,2,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,2,2,2,2,2,2,2,2,2]
+        ];
+
+
+        
+        tx = 3, ty = 3;
+        px = tx, py = ty;
+        x = tx * 60, y = ty * 60;
+
+        objects.push(new Object(0, 5, 5));
+        objects.push(new Object(0, 5, 3));
+        objects.push(new Object(1, 4, 3));
+        break;
+        case 1:
+
+        break;
+    }
+
+}
+
+function reset() {
+
+    x = 0; //current x pixel value
+    y = 0; //current y pixel value
+    tx = 0; //target x tile value
+    ty = 0; //target y tile value
+    px = 0; //previous x tile value
+    py = 0; //previous y tile value
+    moving = false;
+    width = 800;
+    height = 600;
+    keys = [];
+    p = 0;
+    actions = [];
+    running = false;
+
+    
+
+
+
+    load_map(0);
+}
 
 
 function print_actions() {
-    
+
     for(var i = 0; i < actions.length; i++) {
         c.fillStyle = "black";
         if(p - 1 == i) {
@@ -45,62 +119,47 @@ function print_actions() {
         switch(actions[i]) {
 
             case 0:
-                c.fillText("move right", 600, i * 24 + 24);
+            c.fillText("move right", 600, i * 24 + 24);
             break;
             case 1:
-                c.fillText("move left", 600, i * 24 + 24);
+            c.fillText("move left", 600, i * 24 + 24);
             break;
             case 2:
-                c.fillText("move down", 600, i * 24 + 24);
+            c.fillText("move down", 600, i * 24 + 24);
             break;
             case 3:
-                c.fillText("move up", 600, i * 24 + 24);
+            c.fillText("move up", 600, i * 24 + 24);
             break;
             
         }
     }
 }
 
+
+
 function update() {
-    if (moving == false) {
-        if(keys[37]) {
-            tx -= 1;
-            moving = true;
-        }
-
-        if(keys[39]) {
-            tx += 1;
-            moving = true;
-        }
-
-        if(keys[38]) {  
-            ty -= 1;
-            moving = true;
-        }
-
-        if(keys[40]) {
-            ty += 1;
-            moving = true;
-        }
-    }
-
+    //move character to target tile
     if (moving) {
         moving = false;
         if (tx * 60 > x) {
             x++;
             moving = true;
+            direction = 1;
         }
         if (tx * 60 < x) {
             x--;
             moving = true;
+            direction = 3;
         }
         if (ty * 60 > y) {
             y++;
             moving = true;
+            direction = 0;
         }
         if (ty * 60 < y) {
             y--;
             moving = true;
+            direction = 2;
         }
 
     }
@@ -109,35 +168,90 @@ function update() {
 };
 
 function process(var1) {
+    px = tx;
+    py = ty;
     switch(var1) {
         case 0:
+        if(map[tx + 1][ty] != 2) {
             tx += 1;
             moving = true;
+        }
         break;
         case 1:
+        if(map[tx - 1][ty] != 2) {
             tx -= 1;
             moving = true;
+        }
         break;
         case 2:
+        if(map[tx][ty + 1] != 2) {
             ty += 1;
             moving = true;
+        }
         break;
         case 3:
+        if(map[tx][ty - 1] != 2) {
             ty -= 1;
             moving = true;
+        }
         break;
     }
-    
+
+
+    //switches for collision
+
+    if (map[tx][ty] == 3)
+        reset();
+    if (map[px][py] == 1)
+        map[px][py] = 3;
+
+
+    //box logic
+    for(var i = 0; i < objects.length; i++) {
+
+        switch (objects[i].type) {
+            case 0:
+                if(objects[i].type == 0) {
+                var okay = true;
+                for(var j = 0; j < objects.length; j++) {
+                    if(i != j){
+                        if(tx == objects[i].x && ty == objects[i].y) {
+                            if((objects[j].x == objects[i].x + tx - px) && (objects[j].y == objects[i].y + ty - py)) {
+                                okay = false;
+                                tx = px;
+                                ty = py;
+                            }
+                        }
+                    }
+                }
+                if(tx == objects[i].x && ty == objects[i].y && okay) {
+                    objects[i].x = objects[i].x + tx - px;
+                    objects[i].y = objects[i].y + ty - py;
+                }
+                }
+
+            break;
+
+            case 1:
+            if(tx == objects[i].x && ty == objects[i].y) {
+                objects.splice(i, 1);
+            }
+            break;
+        }
+        
+    }
 }
 
 
-
+reset();
 
 var loop = setInterval(function() {
     update();
-    if (!moving) {
+    if (!moving && running) {
         process(actions[p]);
         p++;
+        if(p >= actions.length)
+            running = false;
     }
 
 
@@ -146,6 +260,8 @@ var loop = setInterval(function() {
     c.fillStyle = "gray";
     c.fillRect(600, 0, 800, 600);
 
+
+    //draw switch for tiles
     for(var i = 0; i < 10; i++) {
         for(var j = 0; j < 10; j++) {
             switch(map[i][j]) {
@@ -158,19 +274,55 @@ var loop = setInterval(function() {
                 break;
 
                 case 2:
+                c.drawImage(wall, i * 60, j * 60);
+                break;
 
+                case 4:
+                c.drawImage(exit, i * 60, j * 60);
                 break;
             }
             
         }
     }
 
+    for(var i = 0; i < objects.length; i++) {
+        switch (objects[i].type) {
+            case 0:
+                c.drawImage(block, objects[i].x * 60, objects[i].y * 60);
+            break;
 
-    c.drawImage(robot, x, y);
+            case 1:
+                c.drawImage(wrench, objects[i].x * 60, objects[i].y * 60);
+            break;
+        }
+        
+    }
+
+    switch(direction) {
+        case 0:
+        c.drawImage(roboot_front, x, y);
+        break;
+        case 1:
+        c.drawImage(roboot_right, x, y);
+        break;
+        case 2:
+        c.drawImage(roboot_back, x, y);
+        break;
+        case 3:
+        c.drawImage(roboot_left, x, y);
+        break;
+    }
 
     print_actions();
     
 }, 1);
+
+function Object(type_in, x_in, y_in) {
+    var that = this;
+    this.x = x_in;
+    this.y = y_in;
+    this.type = type_in;
+}
 
 
 document.body.addEventListener("keydown", function (e) {
@@ -178,4 +330,32 @@ document.body.addEventListener("keydown", function (e) {
 });
 document.body.addEventListener("keyup", function (e) {
     keys[e.keyCode] = false;
+
+    var temp = e.keyCode;
+    console.log(temp);
+    if (moving == false) {
+        if(temp == 37) {
+            actions.push(1);
+        }
+
+        if(temp == 39) {
+            actions.push(0);
+        }
+
+        if(temp == 38) {  
+            actions.push(3);
+        }
+
+        if(temp == 40) {
+            actions.push(2);
+        }
+
+        if(temp == 32) {
+            running = true;
+        }
+
+
+    }
+
+
 });
