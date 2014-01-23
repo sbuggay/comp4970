@@ -1,5 +1,6 @@
 var canvas = document.getElementById("c");
 var c = canvas.getContext("2d");
+var audio = document.getElementById("audio");
 c.font = "24px sans-serif";
 
 
@@ -17,7 +18,8 @@ keys = [],
 p = 0;
 actions = [],
 running = false,
-direction = 0;;
+direction = 0,
+lives = 3;
 
 var map = new Array(10);
 for (var i = 0; i < 10; i++) {
@@ -27,9 +29,6 @@ for (var i = 0; i < 10; i++) {
 
 
 var objects = [];
-
-
-
 
 var roboot_front = new Image;
 roboot_front.src = "roboot_front.png";
@@ -51,20 +50,27 @@ var block = new Image;
 block.src = "block.png";
 var wrench = new Image;
 wrench.src = "wrench.png";
+var battery = new Image;
+battery.src = "battery.png";
+
+
+audio.addEventListener("ended", loop, false);
+
+
 
 function load_map(level) {
     switch (level) {
         case 0:
         map = [
         [2,2,2,2,2,2,2,2,2,2],
-        [2,3,3,0,0,0,0,3,3,2],
-        [2,3,3,3,0,3,3,3,3,2],
-        [2,3,3,3,0,0,0,3,3,2],
-        [2,3,3,0,3,0,3,3,3,2],
-        [2,3,3,0,0,0,0,3,3,2],
-        [2,3,3,0,0,0,0,3,3,2],
-        [2,3,3,0,0,0,0,3,3,2],
-        [2,3,3,0,0,0,4,3,3,2],
+        [2,0,3,0,0,0,0,3,3,2],
+        [2,0,3,3,1,3,3,3,3,2],
+        [2,0,3,3,0,0,0,3,3,2],
+        [2,0,3,0,3,0,3,3,3,2],
+        [2,0,3,0,0,0,0,3,3,2],
+        [2,0,3,3,3,0,0,0,3,2],
+        [2,0,3,3,3,0,0,3,3,2],
+        [2,0,0,0,0,0,4,3,3,2],
         [2,2,2,2,2,2,2,2,2,2]
         ];
 
@@ -77,15 +83,54 @@ function load_map(level) {
         objects.push(new Object(0, 5, 5));
         objects.push(new Object(0, 5, 3));
         objects.push(new Object(0, 3, 5));
+        objects.push(new Object(0, 7, 5));
+        objects.push(new Object(0, 6, 6));
 
         objects.push(new Object(1, 4, 3));
         objects.push(new Object(1, 1, 6));
+        objects.push(new Object(1, 6, 7));
+
+        objects.push(new Object(2, 1, 1));
         break;
         case 1:
+        map = [
+        [2,2,2,2,2,2,2,2,2,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,0,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,3,3,0,0,0,0,3,3,2],
+        [2,2,2,2,2,2,2,2,2,2]
+        ];
 
+
+        
+        tx = 1, ty = 3;
+        px = tx, py = ty;
+        x = tx * 60, y = ty * 60;
+
+        objects.push(new Object(0, 5, 5));
+        objects.push(new Object(0, 5, 3));
+        objects.push(new Object(0, 3, 5));
+        objects.push(new Object(0, 7, 5));
+        objects.push(new Object(0, 6, 6));
+
+        objects.push(new Object(1, 4, 3));
+        objects.push(new Object(1, 1, 6));
+        objects.push(new Object(1, 6, 7));
+
+        objects.push(new Object(2, 1, 1));
+        break;
         break;
     }
 
+}
+
+function loop() {
+    audio.play();
 }
 
 function reset() {
@@ -104,11 +149,11 @@ function reset() {
     actions = [];
     running = false;
 
+    objects.length = 0;
+
     
-
-
-
-    load_map(0);
+    if(audio)
+        audio.play();
 }
 
 
@@ -214,9 +259,24 @@ function process(var1) {
 
         switch (objects[i].type) {
             case 0:
-                if(objects[i].type == 0) {
+            if(objects[i].type == 0) {
+
+                if(map[objects[i].x][objects[i].y] == 3) {
+                    objects.splice(i, 1);
+                }
+
                 var okay = true;
+
+                if(tx == objects[i].x && ty == objects[i].y) {
+                    if(map[objects[i].x + tx - px][objects[i].y + ty - py] == 2) {
+                        okay = false;
+                        tx = px;
+                        ty = py;
+                    }
+                }
+
                 for(var j = 0; j < objects.length; j++) {
+
                     if(i != j){
                         if(tx == objects[i].x && ty == objects[i].y) {
                             if((objects[j].x == objects[i].x + tx - px) && (objects[j].y == objects[i].y + ty - py)) {
@@ -227,11 +287,13 @@ function process(var1) {
                         }
                     }
                 }
+
+
                 if(tx == objects[i].x && ty == objects[i].y && okay) {
                     objects[i].x = objects[i].x + tx - px;
                     objects[i].y = objects[i].y + ty - py;
                 }
-                }
+            }
 
             break;
 
@@ -247,6 +309,9 @@ function process(var1) {
 
 
 reset();
+load_map(0);
+
+
 
 var loop = setInterval(function() {
     update();
@@ -291,11 +356,15 @@ var loop = setInterval(function() {
     for(var i = 0; i < objects.length; i++) {
         switch (objects[i].type) {
             case 0:
-                c.drawImage(block, objects[i].x * 60, objects[i].y * 60);
+            c.drawImage(block, objects[i].x * 60, objects[i].y * 60);
             break;
 
             case 1:
-                c.drawImage(wrench, objects[i].x * 60, objects[i].y * 60);
+            c.drawImage(wrench, objects[i].x * 60, objects[i].y * 60);
+            break;
+
+            case 2:
+            c.drawImage(battery, objects[i].x * 60, objects[i].y * 60);
             break;
         }
         
@@ -317,6 +386,10 @@ var loop = setInterval(function() {
     }
 
     print_actions();
+
+    c.fillStyle = "black";
+
+    c.fillText("lives: " + lives, 600, 550);
     
 }, 1);
 
@@ -356,9 +429,5 @@ document.body.addEventListener("keyup", function (e) {
         if(temp == 32) {
             running = true;
         }
-
-
     }
-
-
 });
