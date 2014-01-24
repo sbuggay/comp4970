@@ -20,7 +20,8 @@ actions = [],
 running = false,
 direction = 0,
 lives = 3,
-wrenches = 0;
+wrenches = 0,
+state = 0;
 
 var map = new Array(10);
 for (var i = 0; i < 10; i++) {
@@ -57,6 +58,8 @@ var portal_closed = new Image;
 portal_closed.src = "portal-closed.png";
 var portal_open = new Image;
 portal_open.src = "portal-open.png";
+var opening = new Image;
+opening.src = "screen.png";
 
 
 audio.addEventListener("ended", loop, false);
@@ -254,8 +257,13 @@ function process(var1) {
 
     //switches for collision
 
-    if (map[tx][ty] == 3)
+    if (map[tx][ty] == 3) {
+        live--;
         reset();
+    }
+    if (map[tx][ty] == 4) {
+        state = 2;
+    }
     if (map[px][py] == 1)
         map[px][py] = 3;
 
@@ -309,6 +317,13 @@ function process(var1) {
                 wrenches++;
             }
             break;
+
+
+            case 2:
+            if(tx == objects[i].x && ty == objects[i].y) {
+                objects.splice(i, 1);
+            }
+            break;
         }
         
     }
@@ -321,19 +336,33 @@ load_map(0);
 
 
 var loop = setInterval(function() {
-    update();
-    if (!moving && running) {
-        process(actions[p]);
-        p++;
-        if(p >= actions.length)
-            running = false;
-    }
 
 
-    c.fillStyle = "black";
-    c.fillRect(0, 0, 600, 600);
-    c.fillStyle = "gray";
-    c.fillRect(600, 0, 800, 600);
+    switch (state) {
+
+        case 0:
+        c.drawImage(opening, 0, 0);
+
+            c.fillStyle = "white";
+
+    c.fillText("press space to continue", 0, 550);
+
+        break;
+        case 1:
+        update();
+        if (!moving && running) {
+            process(actions[p]);
+            p++;
+            if(p >= actions.length) {
+                running = false;
+            }
+        }
+
+
+        c.fillStyle = "black";
+        c.fillRect(0, 0, 600, 600);
+        c.fillStyle = "gray";
+        c.fillRect(600, 0, 800, 600);
 
 
     //draw switch for tiles
@@ -403,7 +432,18 @@ var loop = setInterval(function() {
     c.fillStyle = "black";
 
     c.fillText("lives: " + lives, 600, 550);
-    
+
+    break;
+    case 2:
+    c.fillStyle = "black";
+    c.fillRect(0, 0, 800, 600);
+    c.fillStyle = "white";
+    c.fillText("you win", 30, 30);
+    break;
+}
+
+
+
 }, 1);
 
 function Object(type_in, x_in, y_in) {
@@ -440,7 +480,12 @@ document.body.addEventListener("keyup", function (e) {
         }
 
         if(temp == 32) {
-            running = true;
+             if (state == 1)
+                running = true;
+            if (state == 0) 
+                state = 1;
+           
         }
     }
 });
+
